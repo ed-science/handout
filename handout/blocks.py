@@ -59,10 +59,9 @@ class Image(object):
     raise NotImplementedError()
 
   def render(self):
-    output = '<img'
-    output += ' src="{}"'.format(self._filename)
+    output = '<img' + f' src="{self._filename}"'
     if self._width:
-      output += ' width="{}%"'.format(round(100 * self._width, 2))
+      output += f' width="{round(100 * self._width, 2)}%"'
     output += ' />'
     return output
 
@@ -79,9 +78,9 @@ class Video(object):
   def render(self):
     output = '<video autoplay controls loop'
     if self._width:
-      output += ' width="{}%"'.format(round(100 * self._width, 2))
+      output += f' width="{round(100 * self._width, 2)}%"'
     output += '>'
-    output += '<source src="{}">'.format(self._filename)
+    output += f'<source src="{self._filename}">'
     output += '</video>'
     return output
 

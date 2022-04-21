@@ -51,9 +51,9 @@ class Handout(object):
       filename = image
     else:
       import imageio
-      filename = 'image-{}.{}'.format(self._num_images, format)
+      filename = f'image-{self._num_images}.{format}'
       imageio.imsave(os.path.join(self._directory, filename), image)
-      self._logger.info('Saved image: {}'.format(filename))
+      self._logger.info(f'Saved image: {filename}')
     block = blocks.Image(filename, width)
     self._pending.append(block)
     self._num_images += 1
@@ -65,9 +65,9 @@ class Handout(object):
       filename = video
     else:
       import imageio
-      filename = 'video-{}.{}'.format(self._num_videos, format)
+      filename = f'video-{self._num_videos}.{format}'
       imageio.mimsave(os.path.join(self._directory, filename), video, fps=fps)
-      self._logger.info('Saved video: {}'.format(filename))
+      self._logger.info(f'Saved video: {filename}')
     if filename.endswith('.gif'):
       block = blocks.Image(filename, width)
     else:
@@ -85,12 +85,12 @@ class Handout(object):
       self.show()
 
   def add_figure(self, figure, width=None, show=False):
-    filename = 'figure-{}.png'.format(self._num_figures)
+    filename = f'figure-{self._num_figures}.png'
     block = blocks.Image(filename, width)
     self._pending.append(block)
     filename = os.path.join(self._directory, filename)
     figure.savefig(filename)
-    self._logger.info('Saved figure: {}'.format(filename))
+    self._logger.info(f'Saved figure: {filename}')
     self._num_figures += 1
     if show:
       self.show()
@@ -110,25 +110,26 @@ class Handout(object):
       shutil.copyfile(
           os.path.join(datadir, name),
           os.path.join(self._directory, name))
-    self._logger.info("Handout written to: {}".format(filename))
+    self._logger.info(f"Handout written to: {filename}")
 
   def _generate(self, source):
-    content = []
-    content.append(blocks.Html([
-        '<html>',
-        '<head>',
-        '<title>{}</title>'.format(self._title),
-        '<link rel="stylesheet" href="style.css">',
-        '<link rel="stylesheet" href="highlight.css">',
-        '<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">',
-        '<script src="marked.js"></script>',
-        '<script src="script.js"></script>',
-        '<script src="highlight.js"></script>',
-        '<script>hljs.initHighlightingOnLoad();</script>',
-        '</head>',
-        '<body>',
-        '<article>',
-    ]))
+    content = [
+        blocks.Html([
+            '<html>',
+            '<head>',
+            f'<title>{self._title}</title>',
+            '<link rel="stylesheet" href="style.css">',
+            '<link rel="stylesheet" href="highlight.css">',
+            '<link rel="shortcut icon" type="image/x-icon" href="favicon.ico">',
+            '<script src="marked.js"></script>',
+            '<script src="script.js"></script>',
+            '<script src="highlight.js"></script>',
+            '<script>hljs.initHighlightingOnLoad();</script>',
+            '</head>',
+            '<body>',
+            '<article>',
+        ])
+    ]
     content.append(blocks.Code())
     for lineno, line in enumerate(source.split('\n')):
       lineno += 1  # Line numbers are 1-based indices.
@@ -143,10 +144,8 @@ class Handout(object):
         continue
       if not line.endswith('# handout: exclude'):
         content[-1].append(line)
-      blocks_ = self._blocks[lineno]
-      if blocks_:
-        for block in blocks_:
-          content.append(block)
+      if blocks_ := self._blocks[lineno]:
+        content.extend(iter(blocks_))
         content.append(blocks.Code())
     content.append(blocks.Html([
         '</article>',
